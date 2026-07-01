@@ -6,7 +6,7 @@ const DataTable = memo(function DataTable({ reportData, currency, visibleColumns
     const [expandedSources, setExpandedSources] = useState(new Set());
 
     const columns = useMemo(() => [
-        { key: 'source', label: 'Nhóm (Source)', type: 'string' },
+        { key: 'source', label: 'Nhóm (Source)', type: 'text' },
         { key: 'clicks', label: 'Clicks', type: 'number' },
         { key: 'impressions', label: 'Impressions', type: 'number' },
         { key: 'installs', label: 'Installs', type: 'number' },
@@ -110,7 +110,7 @@ const DataTable = memo(function DataTable({ reportData, currency, visibleColumns
                             isColVisible(col.key) && (
                                 <th
                                     key={col.key}
-                                    className={`col-${col.key} ${sortCol === idx ? 'sorted' : ''}`}
+                                    className={`col-${col.key} col-${col.type} ${sortCol === idx ? 'sorted' : ''}`}
                                     onClick={() => handleSort(idx)}
                                     title={`Sắp xếp theo ${col.label}`}
                                 >
@@ -136,7 +136,7 @@ const DataTable = memo(function DataTable({ reportData, currency, visibleColumns
                                 >
                                     {columns.map(col => (
                                         isColVisible(col.key) && (
-                                            <td key={col.key} className={`col-${col.key}`}>
+                                            <td key={col.key} className={`col-${col.key} col-${col.type}`}>
                                                 {col.key === 'source' ? (
                                                     <>
                                                         <span className="expand-icon">▶</span>
@@ -153,7 +153,7 @@ const DataTable = memo(function DataTable({ reportData, currency, visibleColumns
                                     <tr key={`${sourceId}-child-${cIdx}`} className="child-row" style={{ display: 'table-row' }}>
                                         {columns.map(col => (
                                             isColVisible(col.key) && (
-                                                <td key={col.key} className={`col-${col.key}`}>
+                                                <td key={col.key} className={`col-${col.key} col-${col.type}`}>
                                                     {col.key === 'source' ? (
                                                         <>
                                                             <span className="child-indicator"></span>
