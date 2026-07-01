@@ -4,7 +4,7 @@ import MainLayout from '../../Layouts/MainLayout';
 import FilterBar from './FilterBar';
 import TopTable from './TopTable';
 
-const DEFAULT_COLUMNS = ['campaign_name', 'source', 'os', 'cost', 'impressions', 'clicks', 'installs', 'cpi'];
+const DEFAULT_COLUMNS = ['campaign_name', 'source', 'os', 'cost', 'impressions', 'clicks', 'installs', 'cpm'];
 
 export default function TopIndex({
     topData,
@@ -16,6 +16,8 @@ export default function TopIndex({
     allSources,
     selectedSources,
     topLimit,
+    sortCol,
+    sortDir,
 }) {
     const [visibleColumns, setVisibleColumns] = useState(DEFAULT_COLUMNS);
 
@@ -32,7 +34,9 @@ export default function TopIndex({
             date_from: dateFrom,
             date_to: dateTo,
             currency: currency,
-            top_limit: topLimit
+            top_limit: topLimit,
+            sort_col: sortCol,
+            sort_dir: sortDir
         };
 
         const merged = { ...currentParams, ...params };
@@ -42,7 +46,7 @@ export default function TopIndex({
         if (!merged.sources || merged.sources.length === 0) delete merged.sources;
 
         router.get('/top-campaign', merged, { preserveState: true, preserveScroll: true });
-    }, [selectedCustomer, selectedSources, dateFrom, dateTo, currency, topLimit]);
+    }, [selectedCustomer, selectedSources, dateFrom, dateTo, currency, topLimit, sortCol, sortDir]);
 
     const handleColumnToggle = useCallback((colKey, visible) => {
         setVisibleColumns(prev => {
@@ -50,6 +54,10 @@ export default function TopIndex({
             return prev.filter(c => c !== colKey);
         });
     }, []);
+
+    const handleSortChange = useCallback((colKey, newDir) => {
+        handleFilterChange({ sort_col: colKey, sort_dir: newDir });
+    }, [handleFilterChange]);
 
     return (
         <MainLayout>
@@ -83,6 +91,9 @@ export default function TopIndex({
                 topData={topData}
                 currency={currency}
                 visibleColumns={visibleColumns}
+                sortCol={sortCol}
+                sortDir={sortDir}
+                onSortChange={handleSortChange}
             />
 
             {/* Record count */}

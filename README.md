@@ -1,58 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BaoCaoQC - Báo Cáo Chạy Quảng Cáo 📊
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+BaoCaoQC là một hệ thống web nội bộ (Dashboard) được xây dựng bằng **Laravel** và **React (Inertia.js)**, cung cấp giao diện trực quan để xem và phân tích hiệu quả chạy quảng cáo. Hệ thống kết hợp với **DBT (Data Build Tool)** để xử lý và chuẩn hóa dữ liệu từ cơ sở dữ liệu gốc (MySQL).
 
-## About Laravel
+## 🚀 Tính năng chính
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Báo cáo Chiến dịch (Report):** Xem tổng hợp các chỉ số quan trọng (Cost, Clicks, Impressions, Installs, CPI, CTR, CPM...) theo nguồn chạy quảng cáo (Source) và theo từng tựa game (Customer).
+- **So sánh Hiệu quả (Compare):** So sánh trực quan dữ liệu quảng cáo giữa nhiều tập dữ liệu khác nhau trên biểu đồ Chart.js.
+- **Top Chiến dịch (Top QC):** 
+  - Xem bảng xếp hạng top chiến dịch có chi phí chạy cao nhất.
+  - Hỗ trợ xem Top 10, Top 100, Top 1000.
+  - Sắp xếp và phân trang dễ sử dụng.
+- **Tính năng Lọc mạnh mẽ:** Lọc theo Khoảng thời gian, Nguồn (Channel), Khách hàng (Customer), và đơn vị Tiền tệ (VND/USD).
+- **Xuất Excel:** Dễ dàng tải xuống dữ liệu báo cáo ra file Excel siêu tốc ngay trên trình duyệt (sử dụng thư viện SheetJS).
+- **Giao diện Modern & Dark Mode:** Hỗ trợ Dark/Light mode, giao diện bảng căn chỉnh tự động, trải nghiệm người dùng tối ưu.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠 Công nghệ sử dụng
 
-## Learning Laravel
+- **Backend:** Laravel 11, PHP 8.2+
+- **Frontend:** React 19, Inertia.js, Vite
+- **CSS:** Vanilla CSS với biến môi trường (CSS Variables) linh hoạt.
+- **Database:** MySQL
+- **Data Transformation:** DBT (Data Build Tool) - dbt-mysql
+- **Thư viện nổi bật:** 
+  - `chart.js` & `react-chartjs-2`: Vẽ biểu đồ.
+  - `xlsx` (SheetJS): Xuất file Excel phía client.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 📂 Cấu trúc dự án
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```text
+\BaoCaoQC
+├── app/                  # Logic Backend (Controllers, Models)
+│   ├── Http/Controllers/ # ReportController, CompareController, TopCampaignController
+│   └── Models/           # Model kết nối với bảng ads (split_campaigns__dbt_tmp)
+├── resources/
+│   ├── css/              # Chứa file giao diện chính app.css
+│   ├── js/
+│   │   ├── Components/   # Các Component dùng chung (UI, Sidebar)
+│   │   ├── Pages/        # Chứa giao diện các trang (Report, Compare, TopCampaign)
+│   │   └── utils/        # Hàm tiện ích (exportExcel.js)
+│   └── views/            # File blade mặc định app.blade.php
+├── routes/               # Cấu hình routes web.php
+└── package.json          # Dependencies cho Frontend
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🔄 Luồng xử lý Dữ liệu (DBT)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Dữ liệu thô ban đầu có trường `campaign_name` chứa nhiều thông tin hỗn hợp (như hệ điều hành, format quảng cáo, khu vực, mã game...).
+Chúng tôi sử dụng **DBT Model (`split_campaign.sql`)** kết hợp Regex (`REGEXP_SUBSTR`) để tách chuỗi thành các trường dữ liệu rời:
+- `game_name` (Ví dụ: sg293, sg310...)
+- `os` (ios, and)
+- `region` (vn, thai, indo...)
+- `fomat` (searchresult, productpage, discovery...)
+- `type` (topkwdoithu, landing...)
 
-## Code of Conduct
+Mô hình DBT này xuất ra bảng View/Table mới tên là `split_campaigns__dbt_tmp` trên MySQL, và Laravel sẽ đọc dữ liệu trực tiếp từ bảng này thông qua Model `ads`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## ⚙️ Hướng dẫn Cài đặt & Chạy Local
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 1. Yêu cầu hệ thống
+- PHP >= 8.2 & Composer
+- Node.js >= 18 & NPM
+- MySQL
+- Python & dbt-core, dbt-mysql (nếu cần chạy DBT)
 
-## License
+### 2. Cài đặt Laravel & Frontend
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# Clone project
+# cd BaoCaoQC
+
+# Cài đặt PHP packages
+composer install
+
+# Cài đặt JS packages
+npm install
+
+# Copy file .env và cấu hình Database
+cp .env.example .env
+php artisan key:generate
+```
+
+### 3. Chạy Server phát triển
+
+Khởi chạy cả backend và frontend đồng thời ở 2 terminal:
+
+**Terminal 1 (Backend Laravel):**
+```bash
+php artisan serve
+```
+
+**Terminal 2 (Frontend Vite):**
+```bash
+npm run dev
+```
+
+Truy cập ứng dụng tại địa chỉ: `http://localhost:8000`
+
+---
+
+## 📝 Tác giả
+Được xây dựng phục vụ nội bộ cho SohaGame.

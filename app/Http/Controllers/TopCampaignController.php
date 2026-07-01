@@ -18,6 +18,8 @@ class TopCampaignController extends Controller
         $selectedCustomer = $request->input('customer_name', '');
         $selectedSources = $request->input('sources', []);
         $topLimit = (int) $request->input('top_limit', 10);
+        $sortCol = $request->input('sort_col', 'cost');
+        $sortDir = $request->input('sort_dir', 'desc');
 
         // Get unique sources and customers within the date range
         $allSources = ads::select('source')
@@ -59,29 +61,34 @@ class TopCampaignController extends Controller
             $query->whereIn('source', $selectedSources);
         }
 
-        $rawData = $query->get();
         $costField = $currency === 'usd' ? 'cost_usd' : 'cost_vnd';
         $currencySymbol = $currency === 'usd' ? '$' : 'đ';
 
-        // --- Group by campaign_name ---
-        $topData = $rawData->groupBy('campaign_name')->map(function ($items, $campaignName) use ($costField) {
-            $clicks = $items->sum('clicks');
-            $impressions = $items->sum('impressions');
-            $installs = $items->sum('installs');
-            $cost = $items->sum($costField);
-            
-            if ($clicks <= 0 && $impressions <= 0 && $installs <= 0 && $cost <= 0) {
-                return null;
-            }
+        // --- Group by campaign_name in MySQL ---
+        $groupedData = $query->select([
+            'campaign_name',
+            DB::raw("GROUP_CONCAT(DISTINCT source SEPARATOR ', ') as source"),
+            DB::raw("GROUP_CONCAT(DISTINCT os SEPARATOR ', ') as os"),
+            DB::raw("SUM(clicks) as clicks"),
+            DB::raw("SUM(impressions) as impressions"),
+            DB::raw("SUM(installs) as installs"),
+            DB::raw("SUM($costField) as cost")
+        ])
+        ->groupBy('campaign_name')
+        ->havingRaw("SUM(clicks) > 0 OR SUM(impressions) > 0 OR SUM(installs) > 0 OR SUM($costField) > 0")
+        ->get();
 
-            // Get source and os (take the first one if multiple exist, or aggregate)
-            $source = $items->pluck('source')->filter()->unique()->implode(', ');
-            $os = $items->pluck('os')->filter()->unique()->implode(', ');
+        // --- Map calculated percentages in PHP ---
+        $groupedData = $groupedData->map(function ($item) {
+            $clicks = (int) $item->clicks;
+            $impressions = (int) $item->impressions;
+            $installs = (int) $item->installs;
+            $cost = (float) $item->cost;
 
             return [
-                'campaign_name' => $campaignName ?: '(không rõ)',
-                'source' => $source ?: '(không rõ)',
-                'os' => $os ?: '—',
+                'campaign_name' => $item->campaign_name ?: '(không rõ)',
+                'source' => $item->source ?: '(không rõ)',
+                'os' => $item->os ?: '—',
                 'clicks' => $clicks,
                 'impressions' => $impressions,
                 'installs' => $installs,
@@ -91,7 +98,10 @@ class TopCampaignController extends Controller
                 'cpi' => $installs > 0 ? ($cost / $installs) : 0,
                 'cpm' => $impressions > 0 ? ($cost / $impressions) * 1000 : 0,
             ];
-        })->filter()->sortByDesc('cost')->take($topLimit)->values();
+        });
+
+        // --- Sort and Take Top Limit ---
+        $topData = $groupedData->sortBy($sortCol, SORT_REGULAR, $sortDir === 'desc')->take($topLimit)->values();
 
         return Inertia::render('TopCampaign/Index', [
             'topData' => $topData,
@@ -104,6 +114,8 @@ class TopCampaignController extends Controller
             'allSources' => $allSources,
             'selectedSources' => $selectedSources,
             'topLimit' => $topLimit,
+            'sortCol' => $sortCol,
+            'sortDir' => $sortDir,
         ]);
     }
 }
