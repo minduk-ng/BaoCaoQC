@@ -35,6 +35,17 @@ export default function Sidebar() {
                     Báo cáo
                 </Link>
                 <Link
+                    href="/top-campaign"
+                    className={`nav-item ${isActive('/top-campaign') ? 'active' : ''}`}
+                >
+                    <span className="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M8 21h8M12 17v4M7 4h10l2 7H5L7 4zM12 11l-3 4h6l-3-4z" />
+                        </svg>
+                    </span>
+                    Top QC
+                </Link>
+                <Link
                     href="/compare"
                     className={`nav-item ${isActive('/compare') ? 'active' : ''}`}
                 >

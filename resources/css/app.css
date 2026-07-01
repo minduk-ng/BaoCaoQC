@@ -264,7 +264,7 @@ body {
 
 /* Clear button */
 .btn-clear {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 6px; flex-shrink: 1; 
     padding: 8px 16px; background: transparent;
     border: 1px solid var(--border-color); border-radius: var(--radius-sm);
     color: var(--red); font-family: inherit; font-size: 13px; font-weight: 500;
@@ -650,3 +650,61 @@ body {
 
 /* ========== UTILITY: ANIMATION ON ENTER ========== */
 .filter-bar, .stat-bar, .table-container { animation: fadeIn 0.4s ease-out; }
+
+/* ========== NEW FORMATTING CLASSES ========== */
+/* Export Button */
+.btn-export {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    padding: 8px 16px; background: linear-gradient(135deg, var(--green), #059669);
+    border: none; border-radius: var(--radius-sm);
+    color: #fff; font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+.btn-export:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+.btn-export svg { width: 14px; height: 14px; }
+
+/* Filter Actions Right */
+.filter-actions-right {
+    display: flex; gap: 8px; margin-left: auto; align-self: flex-start;
+    align-items: center; flex-shrink: 0; flex-wrap: wrap;
+}
+
+/* Pagination */
+.pagination {
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    padding: 16px; border-top: 1px solid var(--border-color);
+}
+.pagination-btn {
+    padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); color: var(--text-secondary);
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.pagination-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-primary); }
+.pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.pagination-page {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: var(--bg-input); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); color: var(--text-secondary);
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.pagination-page:hover { background: var(--bg-hover); color: var(--text-primary); }
+.pagination-page.active {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: #fff; border-color: transparent; font-weight: 700;
+}
+.pagination-ellipsis { color: var(--text-muted); padding: 0 4px; }
+
+/* Table Alignments */
+/* Default for td/th is now center for numbers */
+.table-container th, .table-container td {
+    text-align: center;
+}
+/* Text columns left aligned */
+.col-text {
+    text-align: left !important;
+}
+/* Campaign Name specific sizing */
+.col-campaign_name {
+    min-width: 250px; max-width: 450px;
+    white-space: normal !important; word-break: break-word;
+}

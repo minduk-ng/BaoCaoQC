@@ -1,15 +1,13 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 import FilterBar from './FilterBar';
-import DataTable from './DataTable';
-import StatCard from '../../Components/UI/StatCard';
+import TopTable from './TopTable';
 
-const ALL_COLUMNS = ['source', 'clicks', 'impressions', 'installs', 'cost', 'ctr', 'cti', 'cpi', 'cpm'];
+const DEFAULT_COLUMNS = ['campaign_name', 'source', 'os', 'cost', 'impressions', 'clicks', 'installs', 'cpi'];
 
-export default function ReportIndex({
-    reportData,
-    summary,
+export default function TopIndex({
+    topData,
     dateFrom,
     dateTo,
     currency,
@@ -17,22 +15,14 @@ export default function ReportIndex({
     selectedCustomer,
     allSources,
     selectedSources,
-    recordCount,
+    topLimit,
 }) {
-    const [visibleColumns, setVisibleColumns] = useState(ALL_COLUMNS);
-
-    // Format helpers for stat cards
-    const formatCost = useMemo(() => {
-        if (currency === 'usd') {
-            return '$' + new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(summary.cost);
-        }
-        return new Intl.NumberFormat('vi-VN').format(Math.round(summary.cost)) + ' đ';
-    }, [summary.cost, currency]);
+    const [visibleColumns, setVisibleColumns] = useState(DEFAULT_COLUMNS);
 
     // Handle filter changes via Inertia
     const handleFilterChange = useCallback((params, isReset = false) => {
         if (isReset) {
-            router.get('/report', {}, { preserveState: true, preserveScroll: true });
+            router.get('/top-campaign', {}, { preserveState: true, preserveScroll: true });
             return;
         }
 
@@ -42,6 +32,7 @@ export default function ReportIndex({
             date_from: dateFrom,
             date_to: dateTo,
             currency: currency,
+            top_limit: topLimit
         };
 
         const merged = { ...currentParams, ...params };
@@ -50,8 +41,8 @@ export default function ReportIndex({
         if (!merged.customer_name) delete merged.customer_name;
         if (!merged.sources || merged.sources.length === 0) delete merged.sources;
 
-        router.get('/report', merged, { preserveState: true, preserveScroll: true });
-    }, [selectedCustomer, selectedSources, dateFrom, dateTo, currency]);
+        router.get('/top-campaign', merged, { preserveState: true, preserveScroll: true });
+    }, [selectedCustomer, selectedSources, dateFrom, dateTo, currency, topLimit]);
 
     const handleColumnToggle = useCallback((colKey, visible) => {
         setVisibleColumns(prev => {
@@ -64,10 +55,10 @@ export default function ReportIndex({
         <MainLayout>
             {/* Header */}
             <div className="page-header" style={{ animation: 'fadeIn 0.4s ease-out' }}>
-                <div className="page-header-icon">📊</div>
+                <div className="page-header-icon">🏆</div>
                 <div>
-                    <h1>Báo cáo Chiến dịch Quảng cáo</h1>
-                    <p>Phân tích hiệu quả theo nguồn dữ liệu</p>
+                    <h1>Top Chiến dịch Quảng cáo</h1>
+                    <p>Xếp hạng hiệu quả chiến dịch</p>
                 </div>
             </div>
 
@@ -80,23 +71,16 @@ export default function ReportIndex({
                 dateFrom={dateFrom}
                 dateTo={dateTo}
                 currency={currency}
+                topLimit={topLimit}
                 visibleColumns={visibleColumns}
                 onFilterChange={handleFilterChange}
                 onColumnToggle={handleColumnToggle}
-                reportData={reportData}
+                topData={topData}
             />
 
-            {/* Stat Cards */}
-            <div className="stat-bar">
-                <StatCard label="Tổng Clicks" value={new Intl.NumberFormat('vi-VN').format(summary.clicks)} />
-                <StatCard label="Tổng Impressions" value={new Intl.NumberFormat('vi-VN').format(summary.impressions)} />
-                <StatCard label="Tổng Installs" value={new Intl.NumberFormat('vi-VN').format(summary.installs)} />
-                <StatCard label="Tổng Chi phí" value={formatCost} />
-            </div>
-
             {/* Data Table */}
-            <DataTable
-                reportData={reportData}
+            <TopTable
+                topData={topData}
                 currency={currency}
                 visibleColumns={visibleColumns}
             />
@@ -106,7 +90,7 @@ export default function ReportIndex({
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 7h16M4 12h16M4 17h10" />
                 </svg>
-                {recordCount} bản ghi
+                {topData.length} bản ghi
             </div>
         </MainLayout>
     );

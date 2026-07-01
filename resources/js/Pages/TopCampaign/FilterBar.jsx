@@ -11,10 +11,11 @@ const FilterBar = memo(function FilterBar({
     dateFrom,
     dateTo,
     currency,
+    topLimit,
     visibleColumns,
     onFilterChange,
     onColumnToggle,
-    reportData
+    topData
 }) {
     const handleCustomerChange = useCallback((e) => {
         onFilterChange({ customer_name: e.target.value });
@@ -39,63 +40,80 @@ const FilterBar = memo(function FilterBar({
         onFilterChange({ currency: cur });
     }, [onFilterChange]);
 
+    const handleTopLimitChange = useCallback((e) => {
+        onFilterChange({ top_limit: e.target.value });
+    }, [onFilterChange]);
+
     const handleClear = useCallback(() => {
-        onFilterChange({ customer_name: '', sources: [], date_from: '', date_to: '', currency: 'vnd' }, true);
+        onFilterChange({ customer_name: '', sources: [], date_from: '', date_to: '', currency: 'vnd', top_limit: 10 }, true);
     }, [onFilterChange]);
 
     const handleExport = useCallback(() => {
         const customerPart = selectedCustomer || 'TatCa';
         const sourcePart = selectedSources.length > 0 ? 'Selected' : 'TatCa';
-        const filename = `Report_${customerPart}_${sourcePart}_${dateFrom}_to_${dateTo}.xlsx`;
+        const filename = `Top${topLimit}_${customerPart}_${sourcePart}_${dateFrom}_to_${dateTo}.xlsx`;
 
+        // Define columns for export
         const exportCols = [
-            { key: 'source', label: 'Nguồn (Source)' },
-            { key: 'clicks', label: 'Clicks' },
-            { key: 'impressions', label: 'Impressions' },
-            { key: 'installs', label: 'Installs' },
+            { key: 'campaign_name', label: 'Ad Name' },
+            { key: 'source', label: 'Channel' },
+            { key: 'os', label: 'OS' },
             { key: 'cost', label: `Cost (${currency.toUpperCase()})` },
+            { key: 'impressions', label: 'Impressions' },
+            { key: 'clicks', label: 'Clicks' },
+            { key: 'installs', label: 'Installs' },
+            { key: 'cpi', label: `CPI (${currency.toUpperCase()})` },
             { key: 'ctr', label: 'CTR (%)' },
             { key: 'cti', label: 'CTI (%)' },
-            { key: 'cpi', label: `CPI (${currency.toUpperCase()})` },
             { key: 'cpm', label: `CPM (${currency.toUpperCase()})` },
         ];
 
-        // Flatten data for export
-        const exportData = [];
-        reportData.forEach(row => {
-            // Parent row
-            exportData.push({
+        // Format data before export
+        const formattedData = topData.map((row, index) => {
+            return {
                 ...row,
-                source: `[Tổng] ${row.source}`
-            });
-            // Child rows
-            if (row.children && row.children.length > 0) {
-                row.children.forEach(child => {
-                    exportData.push({
-                        ...child,
-                        source: `  ↳ ${child.customer_name}` // Prefix space to indicate child
-                    });
-                });
-            }
+                stt: index + 1
+            };
         });
 
-        exportToExcel(exportData, exportCols, filename);
-    }, [reportData, selectedCustomer, selectedSources, dateFrom, dateTo, currency]);
+        const finalCols = [{ key: 'stt', label: 'STT' }, ...exportCols];
+
+        exportToExcel(formattedData, finalCols, filename);
+    }, [topData, topLimit, selectedCustomer, selectedSources, dateFrom, dateTo, currency]);
 
     const columns = [
-        { key: 'source', label: 'Nguồn (Source)' },
-        { key: 'clicks', label: 'Clicks' },
-        { key: 'impressions', label: 'Impressions' },
-        { key: 'installs', label: 'Installs' },
+        { key: 'campaign_name', label: 'Ad Name' },
+        { key: 'source', label: 'Channel' },
+        { key: 'os', label: 'OS' },
         { key: 'cost', label: 'Cost' },
+        { key: 'impressions', label: 'Impressions' },
+        { key: 'clicks', label: 'Clicks' },
+        { key: 'installs', label: 'Installs' },
+        { key: 'cpi', label: 'CPI' },
         { key: 'ctr', label: 'CTR' },
         { key: 'cti', label: 'CTI' },
-        { key: 'cpi', label: 'CPI' },
         { key: 'cpm', label: 'CPM' },
     ];
 
     return (
         <div className="filter-bar">
+            {/* Top Selector */}
+            <div className="filter-group">
+                <span className="filter-label">Top</span>
+                <select
+                    className="filter-select"
+                    value={topLimit}
+                    onChange={handleTopLimitChange}
+                    style={{ width: '80px', minWidth: 'auto' }}
+                >
+                    <option value="10">10</option>
+                    <option value="100">100</option>
+                    <option value="1000">1000</option>
+                </select>
+            </div>
+
+            <div className="filter-sep"></div>
+
             {/* Customer */}
             <div className="filter-group">
                 <span className="filter-label">Customer</span>
@@ -148,7 +166,6 @@ const FilterBar = memo(function FilterBar({
                 />
             </div>
 
-
             <div className="filter-sep"></div>
 
             {/* Currency */}
@@ -192,7 +209,7 @@ const FilterBar = memo(function FilterBar({
                     </label>
                 ))}
             </Dropdown>
-                <button type="button" className="btn-clear" onClick={handleClear}>
+            <button type="button" className="btn-clear" onClick={handleClear}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18" /><path d="M8 6V4h8v2" />
                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
@@ -201,8 +218,10 @@ const FilterBar = memo(function FilterBar({
                 </svg>
                 Clear
             </button>
+            {/* <div className="spacer"></div> */}
+
+            {/* Export and Clear - Right Aligned & Top if wrapped */}
             <div className="filter-actions-right">
-                
                 <button type="button" className="btn-export" onClick={handleExport}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -211,12 +230,7 @@ const FilterBar = memo(function FilterBar({
                     </svg>
                     Xuất Excel
                 </button>
-                
             </div>
-
-            
-            {/* Export and Clear - Right Aligned */}
-
         </div>
     );
 });
