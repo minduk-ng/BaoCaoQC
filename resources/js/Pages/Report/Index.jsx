@@ -13,11 +13,19 @@ export default function ReportIndex({
     dateFrom,
     dateTo,
     currency,
+    groupMode,
     customerNames,
     selectedCustomer,
     allSources,
     selectedSources,
-    recordCount,
+    allRegions,
+    selectedRegions,
+    allOs,
+    selectedOs,
+    allFormats,
+    selectedFormats,
+    allTypes,
+    selectedTypes,
 }) {
     const [visibleColumns, setVisibleColumns] = useState(ALL_COLUMNS);
 
@@ -37,8 +45,13 @@ export default function ReportIndex({
         }
 
         const currentParams = {
+            group_mode: groupMode,
             customer_name: selectedCustomer,
             sources: selectedSources,
+            regions: selectedRegions,
+            os_filter: selectedOs,
+            formats: selectedFormats,
+            types: selectedTypes,
             date_from: dateFrom,
             date_to: dateTo,
             currency: currency,
@@ -49,9 +62,16 @@ export default function ReportIndex({
         // Clean empty values
         if (!merged.customer_name) delete merged.customer_name;
         if (!merged.sources || merged.sources.length === 0) delete merged.sources;
+        if (!merged.regions || merged.regions.length === 0) delete merged.regions;
+        if (!merged.os_filter || merged.os_filter.length === 0) delete merged.os_filter;
+        if (!merged.formats || merged.formats.length === 0) delete merged.formats;
+        if (!merged.types || merged.types.length === 0) delete merged.types;
 
         router.get('/report', merged, { preserveState: true, preserveScroll: true });
-    }, [selectedCustomer, selectedSources, dateFrom, dateTo, currency]);
+    }, [
+        groupMode, selectedCustomer, selectedSources, selectedRegions,
+        selectedOs, selectedFormats, selectedTypes, dateFrom, dateTo, currency
+    ]);
 
     const handleColumnToggle = useCallback((colKey, visible) => {
         setVisibleColumns(prev => {
@@ -59,6 +79,9 @@ export default function ReportIndex({
             return prev.filter(c => c !== colKey);
         });
     }, []);
+
+    // Calculate record count differently based on flat vs tree
+    const recordCount = reportData ? reportData.length : 0;
 
     return (
         <MainLayout>
@@ -73,10 +96,19 @@ export default function ReportIndex({
 
             {/* Filter Bar */}
             <FilterBar
+                groupMode={groupMode}
                 customerNames={customerNames}
                 selectedCustomer={selectedCustomer}
                 allSources={allSources}
                 selectedSources={selectedSources}
+                allRegions={allRegions}
+                selectedRegions={selectedRegions}
+                allOs={allOs}
+                selectedOs={selectedOs}
+                allFormats={allFormats}
+                selectedFormats={selectedFormats}
+                allTypes={allTypes}
+                selectedTypes={selectedTypes}
                 dateFrom={dateFrom}
                 dateTo={dateTo}
                 currency={currency}
@@ -99,6 +131,7 @@ export default function ReportIndex({
                 reportData={reportData}
                 currency={currency}
                 visibleColumns={visibleColumns}
+                groupMode={groupMode}
             />
 
             {/* Record count */}
