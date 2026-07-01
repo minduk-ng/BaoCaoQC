@@ -32,12 +32,10 @@ BaoCaoQC là một hệ thống web nội bộ (Dashboard) được xây dựng 
 ## 📂 Cấu trúc dự án
 
 ```text
-D:\laravel\BaoCaoQC
+\BaoCaoQC
 ├── app/                  # Logic Backend (Controllers, Models)
 │   ├── Http/Controllers/ # ReportController, CompareController, TopCampaignController
 │   └── Models/           # Model kết nối với bảng ads (split_campaigns__dbt_tmp)
-├── dbt-mysql/            # Thư mục xử lý dữ liệu của DBT
-│   └── mysql/models/     # Chứa split_campaign.sql xử lý tách chuỗi campaign_name
 ├── resources/
 │   ├── css/              # Chứa file giao diện chính app.css
 │   ├── js/

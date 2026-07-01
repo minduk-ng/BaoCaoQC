@@ -97,8 +97,9 @@ const FilterBar = memo(function FilterBar({
 
     return (
         <div className="filter-bar">
-            {/* Top Selector */}
-            <div className="filter-group">
+            <div className="filter-inputs">
+                {/* Top Selector */}
+                <div className="filter-group">
                 <span className="filter-label">Top</span>
                 <select
                     className="filter-select"
@@ -218,9 +219,9 @@ const FilterBar = memo(function FilterBar({
                 </svg>
                 Clear
             </button>
-            {/* <div className="spacer"></div> */}
+            </div>
 
-            {/* Export and Clear - Right Aligned & Top if wrapped */}
+            {/* Export - Right Aligned & Top if wrapped */}
             <div className="filter-actions-right">
                 <button type="button" className="btn-export" onClick={handleExport}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

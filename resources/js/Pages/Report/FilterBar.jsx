@@ -97,18 +97,20 @@ const FilterBar = memo(function FilterBar({
     return (
         <div className="filter-bar">
             {/* Customer */}
-            <div className="filter-group">
-                <span className="filter-label">Customer</span>
-                <select
-                    className="filter-select"
-                    value={selectedCustomer}
-                    onChange={handleCustomerChange}
-                >
-                    <option value="">Tất cả</option>
-                    {customerNames.map(name => (
-                        <option key={name} value={name}>{name}</option>
-                    ))}
-                </select>
+            <div className='filter-inputs'>
+                <div className="filter-group">
+                    <span className="filter-label">Customer</span>
+                    <select
+                        className="filter-select"
+                        value={selectedCustomer}
+                        onChange={handleCustomerChange}
+                    >
+                        <option value="">Tất cả</option>
+                        {customerNames.map(name => (
+                            <option key={name} value={name}>{name}</option>
+                        ))}
+                    </select>
+                
             </div>
 
             <div className="filter-sep"></div>
@@ -201,8 +203,9 @@ const FilterBar = memo(function FilterBar({
                 </svg>
                 Clear
             </button>
+            </div>
+
             <div className="filter-actions-right">
-                
                 <button type="button" className="btn-export" onClick={handleExport}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -211,7 +214,6 @@ const FilterBar = memo(function FilterBar({
                     </svg>
                     Xuất Excel
                 </button>
-                
             </div>
 
             

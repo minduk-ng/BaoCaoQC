@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 
-const TopTable = memo(function TopTable({ topData, currency, visibleColumns }) {
-    const [sortCol, setSortCol] = useState('cost');
-    const [sortDir, setSortDir] = useState('desc');
+const TopTable = memo(function TopTable({ topData, currency, visibleColumns, sortCol, sortDir, onSortChange }) {
     
+
     // Phân trang
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -23,40 +22,21 @@ const TopTable = memo(function TopTable({ topData, currency, visibleColumns }) {
         { key: 'cpm', label: `CPM (${currency.toUpperCase()})`, type: 'number' },
     ], [currency]);
 
-    // Sorting logic (STT will be calculated after sort)
-    const sortedData = useMemo(() => {
+    // Processing logic (Add STT)
+    const processedData = useMemo(() => {
         if (!topData || topData.length === 0) return [];
-        
-        // Find column definition to know the type
-        const colDef = columns.find(c => c.key === sortCol);
-        if (!colDef) return [...topData];
-
-        const sorted = [...topData].sort((a, b) => {
-            const aVal = a[sortCol];
-            const bVal = b[sortCol];
-            
-            let cmp;
-            if (colDef.type === 'text') {
-                cmp = String(aVal).localeCompare(String(bVal));
-            } else {
-                cmp = (Number(aVal) || 0) - (Number(bVal) || 0);
-            }
-            return sortDir === 'asc' ? cmp : -cmp;
-        });
-
-        // Add STT after sort
-        return sorted.map((row, index) => ({
+        return topData.map((row, index) => ({
             ...row,
             stt: index + 1
         }));
-    }, [topData, sortCol, sortDir, columns]);
+    }, [topData]);
 
     // Pagination
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+    const totalPages = Math.ceil(processedData.length / itemsPerPage);
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
-        return sortedData.slice(startIndex, startIndex + itemsPerPage);
-    }, [sortedData, currentPage]);
+        return processedData.slice(startIndex, startIndex + itemsPerPage);
+    }, [processedData, currentPage]);
 
     // Summary row (Total of all records, not just current page)
     const summary = useMemo(() => {
@@ -84,16 +64,15 @@ const TopTable = memo(function TopTable({ topData, currency, visibleColumns }) {
     const handleSort = useCallback((colKey) => {
         if (colKey === 'stt') return; // Do not sort by STT
 
-        setSortCol(prev => {
-            if (prev === colKey) {
-                setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-                return prev;
-            }
-            setSortDir('asc'); // Default when new column
-            return colKey;
-        });
+        let newDir = 'asc';
+        if (sortCol === colKey) {
+            newDir = sortDir === 'asc' ? 'desc' : 'asc';
+        }
+        if (onSortChange) {
+            onSortChange(colKey, newDir);
+        }
         setCurrentPage(1); // Reset to page 1 on sort
-    }, []);
+    }, [sortCol, sortDir, onSortChange]);
 
     const handlePageChange = useCallback((page) => {
         if (page >= 1 && page <= totalPages) {
