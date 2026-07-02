@@ -26,10 +26,9 @@ class ReportController extends Controller
 
         $hasMetrics = function($q) {
             $q->where('clicks', '>', 0)
-              ->orWhere('impressions', '>', 0)
-              ->orWhere('installs', '>', 0)
-              ->orWhere('cost_usd', '>', 0)
-              ->orWhere('cost_vnd', '>', 0);
+              ->where('impressions', '>', 0)
+              ->where('installs', '>', 0)
+              ->where('cost_vnd', '>', 0);
         };
 
         // Fetch distinct values for filters
@@ -72,13 +71,15 @@ class ReportController extends Controller
             $selectedCustomer = '';
         }
 
-        // --- Xây dựng query ---
+        // --- Xây dựng query (Group trực tiếp ở MySQL thông qua Eloquent) ---
+        $costField = $currency === 'usd' ? 'cost_usd' : 'cost_vnd';
+        $currencySymbol = $currency === 'usd' ? '$' : 'đ';
+
         $query = ads::whereBetween('date', [$dateFrom, $dateTo]);
 
         if ($selectedCustomer !== '') {
             $query->where('customer_name', $selectedCustomer);
         }
-
         if (!empty($selectedSources)) {
             $query->whereIn('source', $selectedSources);
         }
@@ -95,66 +96,20 @@ class ReportController extends Controller
             $query->whereIn('type', $selectedTypes);
         }
 
-        $costField = $currency === 'usd' ? 'cost_usd' : 'cost_vnd';
-        $currencySymbol = $currency === 'usd' ? '$' : 'đ';
-
         if ($groupMode === 'source') {
-            // Group by source, customer_name
-            $groupedData = (clone $query)->select([
+            $spResults = (clone $query)->select([
                 'source',
                 'customer_name',
                 DB::raw("SUM(clicks) as clicks"),
                 DB::raw("SUM(impressions) as impressions"),
                 DB::raw("SUM(installs) as installs"),
-                DB::raw("SUM($costField) as cost")
+                DB::raw("SUM(cost_usd) as cost_usd"),
+                DB::raw("SUM(cost_vnd) as cost_vnd")
             ])
             ->groupBy('source', 'customer_name')
-            ->havingRaw("SUM(clicks) > 0 OR SUM(impressions) > 0 OR SUM(installs) > 0 OR SUM($costField) > 0")
             ->get();
-
-            // Build Tree in PHP
-            $reportData = $groupedData->groupBy('source')->map(function ($items, $source) use ($costField) {
-                $clicks = $items->sum('clicks');
-                $impressions = $items->sum('impressions');
-                $installs = $items->sum('installs');
-                $cost = $items->sum('cost');
-
-                $children = $items->map(function ($item) {
-                    $c = (int) $item->clicks;
-                    $i = (int) $item->impressions;
-                    $ins = (int) $item->installs;
-                    $co = (float) $item->cost;
-
-                    return [
-                        'customer_name' => $item->customer_name ?: '(không rõ)',
-                        'clicks' => $c,
-                        'impressions' => $i,
-                        'installs' => $ins,
-                        'cost' => $co,
-                        'ctr' => $i > 0 ? ($c / $i) * 100 : 0,
-                        'cti' => $c > 0 ? ($ins / $c) * 100 : 0,
-                        'cpi' => $ins > 0 ? ($co / $ins) : 0,
-                        'cpm' => $i > 0 ? ($co / $i) * 1000 : 0,
-                    ];
-                })->filter()->sortBy('customer_name')->values()->all();
-
-                return [
-                    'source' => $source ?: 'Unknown',
-                    'clicks' => $clicks,
-                    'impressions' => $impressions,
-                    'installs' => $installs,
-                    'cost' => $cost,
-                    'ctr' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,
-                    'cti' => $clicks > 0 ? ($installs / $clicks) * 100 : 0,
-                    'cpi' => $installs > 0 ? ($cost / $installs) : 0,
-                    'cpm' => $impressions > 0 ? ($cost / $impressions) * 1000 : 0,
-                    'children' => $children,
-                ];
-            })->filter()->sortBy('source')->values();
-
         } else {
-            // Group by os, source, fomat, type
-            $groupedData = (clone $query)->select([
+            $spResults = (clone $query)->select([
                 'os',
                 'source',
                 'fomat',
@@ -162,14 +117,60 @@ class ReportController extends Controller
                 DB::raw("SUM(clicks) as clicks"),
                 DB::raw("SUM(impressions) as impressions"),
                 DB::raw("SUM(installs) as installs"),
-                DB::raw("SUM($costField) as cost")
+                DB::raw("SUM(cost_usd) as cost_usd"),
+                DB::raw("SUM(cost_vnd) as cost_vnd")
             ])
             ->groupBy('os', 'source', 'fomat', 'type')
-            ->havingRaw("SUM(clicks) > 0 OR SUM(impressions) > 0 OR SUM(installs) > 0 OR SUM($costField) > 0")
             ->get();
+        }
 
+        // Helper function tính metrics
+        $calcMetrics = function ($clicks, $impressions, $installs, $cost) {
+            return [
+                'ctr' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,
+                'cti' => $clicks > 0 ? ($installs / $clicks) * 100 : 0,
+                'cpi' => $installs > 0 ? ($cost / $installs) : 0,
+                'cpm' => $impressions > 0 ? ($cost / $impressions) * 1000 : 0,
+            ];
+        };
+
+        if ($groupMode === 'source') {
+            // Build Tree: Source → Customer
+            $reportData = $spResults->groupBy('source')->map(function ($items, $source) use ($calcMetrics, $costField) {
+                $clicks = $items->sum('clicks');
+                $impressions = $items->sum('impressions');
+                $installs = $items->sum('installs');
+                $cost = $items->sum($costField);
+
+                $children = $items->map(function ($item) use ($calcMetrics, $costField) {
+                    $c = (int) $item->clicks;
+                    $i = (int) $item->impressions;
+                    $ins = (int) $item->installs;
+                    $co = (float) $item->$costField;
+
+                    return array_merge([
+                        'customer_name' => $item->customer_name ?: '(không rõ)',
+                        'clicks' => $c,
+                        'impressions' => $i,
+                        'installs' => $ins,
+                        'cost' => $co,
+                    ], $calcMetrics($c, $i, $ins, $co));
+                })->filter()->sortBy('customer_name')->values()->all();
+
+                return array_merge([
+                    'source' => $source ?: 'Unknown',
+                    'clicks' => $clicks,
+                    'impressions' => $impressions,
+                    'installs' => $installs,
+                    'cost' => $cost,
+                    'children' => $children,
+                ], $calcMetrics($clicks, $impressions, $installs, $cost));
+            })->filter()->sortBy('source')->values();
+
+        } else {
+            // Build Tree: OS → Source → Format → Type
             // Replace null/empty with Unknown
-            $groupedData = $groupedData->map(function ($item) {
+            $spResults = $spResults->map(function ($item) {
                 $item->os = $item->os ?: 'Unknown';
                 $item->source = $item->source ?: 'Unknown';
                 $item->fomat = $item->fomat ?: 'Unknown';
@@ -177,112 +178,84 @@ class ReportController extends Controller
                 return $item;
             });
 
-            // Build Tree: OS -> Source -> Format -> Type
-            $reportData = $groupedData->groupBy('os')->map(function ($osItems, $os) {
+            $reportData = $spResults->groupBy('os')->map(function ($osItems, $os) use ($calcMetrics, $costField) {
                 $osClicks = $osItems->sum('clicks');
                 $osImpressions = $osItems->sum('impressions');
                 $osInstalls = $osItems->sum('installs');
-                $osCost = $osItems->sum('cost');
+                $osCost = $osItems->sum($costField);
 
-                $osChildren = $osItems->groupBy('source')->map(function ($sourceItems, $source) {
+                $osChildren = $osItems->groupBy('source')->map(function ($sourceItems, $source) use ($calcMetrics, $costField) {
                     $sClicks = $sourceItems->sum('clicks');
                     $sImpressions = $sourceItems->sum('impressions');
                     $sInstalls = $sourceItems->sum('installs');
-                    $sCost = $sourceItems->sum('cost');
+                    $sCost = $sourceItems->sum($costField);
 
-                    $sourceChildren = $sourceItems->groupBy('fomat')->map(function ($fomatItems, $fomat) {
+                    $sourceChildren = $sourceItems->groupBy('fomat')->map(function ($fomatItems, $fomat) use ($calcMetrics, $costField) {
                         $fClicks = $fomatItems->sum('clicks');
                         $fImpressions = $fomatItems->sum('impressions');
                         $fInstalls = $fomatItems->sum('installs');
-                        $fCost = $fomatItems->sum('cost');
+                        $fCost = $fomatItems->sum($costField);
 
-                        $fomatChildren = $fomatItems->map(function ($item) {
+                        $fomatChildren = $fomatItems->map(function ($item) use ($calcMetrics, $costField) {
                             $c = (int) $item->clicks;
                             $i = (int) $item->impressions;
                             $ins = (int) $item->installs;
-                            $co = (float) $item->cost;
-                            return [
-                                'type' => 'type', // Identifier
+                            $co = (float) $item->$costField;
+                            return array_merge([
+                                'type' => 'type',
                                 'label' => $item->type,
                                 'clicks' => $c,
                                 'impressions' => $i,
                                 'installs' => $ins,
                                 'cost' => $co,
-                                'ctr' => $i > 0 ? ($c / $i) * 100 : 0,
-                                'cti' => $c > 0 ? ($ins / $c) * 100 : 0,
-                                'cpi' => $ins > 0 ? ($co / $ins) : 0,
-                                'cpm' => $i > 0 ? ($co / $i) * 1000 : 0,
-                            ];
+                            ], $calcMetrics($c, $i, $ins, $co));
                         })->values()->all();
 
-                        return [
+                        return array_merge([
                             'type' => 'fomat',
                             'label' => $fomat,
                             'clicks' => $fClicks,
                             'impressions' => $fImpressions,
                             'installs' => $fInstalls,
                             'cost' => $fCost,
-                            'ctr' => $fImpressions > 0 ? ($fClicks / $fImpressions) * 100 : 0,
-                            'cti' => $fClicks > 0 ? ($fInstalls / $fClicks) * 100 : 0,
-                            'cpi' => $fInstalls > 0 ? ($fCost / $fInstalls) : 0,
-                            'cpm' => $fImpressions > 0 ? ($fCost / $fImpressions) * 1000 : 0,
-                            'children' => $fomatChildren
-                        ];
+                            'children' => $fomatChildren,
+                        ], $calcMetrics($fClicks, $fImpressions, $fInstalls, $fCost));
                     })->values()->all();
 
-                    return [
+                    return array_merge([
                         'type' => 'source',
                         'label' => $source,
                         'clicks' => $sClicks,
                         'impressions' => $sImpressions,
                         'installs' => $sInstalls,
                         'cost' => $sCost,
-                        'ctr' => $sImpressions > 0 ? ($sClicks / $sImpressions) * 100 : 0,
-                        'cti' => $sClicks > 0 ? ($sInstalls / $sClicks) * 100 : 0,
-                        'cpi' => $sInstalls > 0 ? ($sCost / $sInstalls) : 0,
-                        'cpm' => $sImpressions > 0 ? ($sCost / $sImpressions) * 1000 : 0,
-                        'children' => $sourceChildren
-                    ];
+                        'children' => $sourceChildren,
+                    ], $calcMetrics($sClicks, $sImpressions, $sInstalls, $sCost));
                 })->values()->all();
 
-                return [
+                return array_merge([
                     'os' => $os,
                     'clicks' => $osClicks,
                     'impressions' => $osImpressions,
                     'installs' => $osInstalls,
                     'cost' => $osCost,
-                    'ctr' => $osImpressions > 0 ? ($osClicks / $osImpressions) * 100 : 0,
-                    'cti' => $osClicks > 0 ? ($osInstalls / $osClicks) * 100 : 0,
-                    'cpi' => $osInstalls > 0 ? ($osCost / $osInstalls) : 0,
-                    'cpm' => $osImpressions > 0 ? ($osCost / $osImpressions) * 1000 : 0,
-                    'children' => $osChildren
-                ];
+                    'children' => $osChildren,
+                ], $calcMetrics($osClicks, $osImpressions, $osInstalls, $osCost));
             })->values();
         }
 
-        // --- Tính tổng ---
-        $summaryQuery = (clone $query)->select([
-            DB::raw("SUM(clicks) as clicks"),
-            DB::raw("SUM(impressions) as impressions"),
-            DB::raw("SUM(installs) as installs"),
-            DB::raw("SUM($costField) as cost")
-        ])->first();
+        // --- Tính tổng từ kết quả SP ---
+        $totalClicks = (int) $spResults->sum('clicks');
+        $totalImpressions = (int) $spResults->sum('impressions');
+        $totalInstalls = (int) $spResults->sum('installs');
+        $totalCost = (float) $spResults->sum($costField);
 
-        $totalClicks = (int) ($summaryQuery->clicks ?? 0);
-        $totalImpressions = (int) ($summaryQuery->impressions ?? 0);
-        $totalInstalls = (int) ($summaryQuery->installs ?? 0);
-        $totalCost = (float) ($summaryQuery->cost ?? 0);
-
-        $summary = [
+        $summary = array_merge([
             'clicks' => $totalClicks,
             'impressions' => $totalImpressions,
             'installs' => $totalInstalls,
             'cost' => $totalCost,
-            'ctr' => $totalImpressions > 0 ? ($totalClicks / $totalImpressions) * 100 : 0,
-            'cti' => $totalClicks > 0 ? ($totalInstalls / $totalClicks) * 100 : 0,
-            'cpi' => $totalInstalls > 0 ? ($totalCost / $totalInstalls) : 0,
-            'cpm' => $totalImpressions > 0 ? ($totalCost / $totalImpressions) * 1000 : 0,
-        ];
+        ], $calcMetrics($totalClicks, $totalImpressions, $totalInstalls, $totalCost));
 
         return Inertia::render('Report/Index', [
             'reportData' => $reportData,

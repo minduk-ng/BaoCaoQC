@@ -176,6 +176,16 @@ const FilterBar = memo(function FilterBar({
 
                 <div className="filter-sep"></div>
 
+                {/* Date Range */}
+                <div className="filter-group">
+                    <span className="filter-label">Ngày</span>
+                    <DateRangePicker
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        onChange={handleDateChange}
+                    />
+                </div>
+<div className="filter-sep"></div>
                 {/* Filter Button */}
                 <div className="filter-group">
                     <button 
@@ -190,17 +200,9 @@ const FilterBar = memo(function FilterBar({
                     </button>
                 </div>
 
-                <div className="filter-sep"></div>
+                
 
-                {/* Date Range */}
-                <div className="filter-group">
-                    <span className="filter-label">Ngày</span>
-                    <DateRangePicker
-                        dateFrom={dateFrom}
-                        dateTo={dateTo}
-                        onChange={handleDateChange}
-                    />
-                </div>
+                
 
                 <div className="filter-sep"></div>
 

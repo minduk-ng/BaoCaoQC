@@ -75,8 +75,9 @@ export default function FilterModal({
     };
 
     return (
-        <div className="filter-modal-overlay">
-            <div className="filter-modal-content">
+        <div className="filter-modal-overlay" onClick={onClose}>
+            
+            <div className="filter-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="filter-modal-header">
                     <h3>Bộ lọc dữ liệu</h3>
                     <button className="filter-modal-close" onClick={onClose}>&times;</button>
@@ -100,6 +101,7 @@ export default function FilterModal({
                     <button className="filter-btn-primary" onClick={handleApply}>Xem kết quả</button>
                 </div>
             </div>
+            
         </div>
     );
 }

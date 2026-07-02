@@ -98,22 +98,7 @@ const FilterBar = memo(function FilterBar({
     return (
         <div className="filter-bar">
             <div className="filter-inputs">
-                {/* Top Selector */}
-                <div className="filter-group">
-                <span className="filter-label">Top</span>
-                <select
-                    className="filter-select"
-                    value={topLimit}
-                    onChange={handleTopLimitChange}
-                    style={{ width: '80px', minWidth: 'auto' }}
-                >
-                    <option value="10">10</option>
-                    <option value="100">100</option>
-                    <option value="1000">1000</option>
-                </select>
-            </div>
-
-            <div className="filter-sep"></div>
+                
 
             {/* Customer */}
             <div className="filter-group">
@@ -127,6 +112,37 @@ const FilterBar = memo(function FilterBar({
                     {customerNames.map(name => (
                         <option key={name} value={name}>{name}</option>
                     ))}
+                </select>
+            </div>
+
+            <div className="filter-sep"></div>
+
+            
+
+            {/* Date Range */}
+            <div className="filter-group">
+                <span className="filter-label">Ngày</span>
+                <DateRangePicker
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                    onChange={handleDateChange}
+                />
+            </div>
+
+            <div className="filter-sep"></div>
+
+            {/* Top Selector */}
+                <div className="filter-group">
+                <span className="filter-label">Top</span>
+                <select
+                    className="filter-select"
+                    value={topLimit}
+                    onChange={handleTopLimitChange}
+                    style={{ width: '80px', minWidth: 'auto' }}
+                >
+                    <option value="10">10</option>
+                    <option value="100">100</option>
+                    <option value="1000">1000</option>
                 </select>
             </div>
 
@@ -154,18 +170,6 @@ const FilterBar = memo(function FilterBar({
                     </label>
                 ))}
             </Dropdown>
-
-            <div className="filter-sep"></div>
-
-            {/* Date Range */}
-            <div className="filter-group">
-                <span className="filter-label">Ngày</span>
-                <DateRangePicker
-                    dateFrom={dateFrom}
-                    dateTo={dateTo}
-                    onChange={handleDateChange}
-                />
-            </div>
 
             <div className="filter-sep"></div>
 
