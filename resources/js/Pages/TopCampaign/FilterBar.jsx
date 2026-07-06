@@ -98,22 +98,7 @@ const FilterBar = memo(function FilterBar({
     return (
         <div className="filter-bar">
             <div className="filter-inputs">
-                {/* Top Selector */}
-                <div className="filter-group">
-                <span className="filter-label">Top</span>
-                <select
-                    className="filter-select"
-                    value={topLimit}
-                    onChange={handleTopLimitChange}
-                    style={{ width: '80px', minWidth: 'auto' }}
-                >
-                    <option value="10">10</option>
-                    <option value="100">100</option>
-                    <option value="1000">1000</option>
-                </select>
-            </div>
-
-            <div className="filter-sep"></div>
+                
 
             {/* Customer */}
             <div className="filter-group">
@@ -132,30 +117,7 @@ const FilterBar = memo(function FilterBar({
 
             <div className="filter-sep"></div>
 
-            {/* Source */}
-            <Dropdown
-                buttonLabel="Lọc Source"
-                badge={selectedSources.length}
-                align="left"
-                icon={
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
-                    </svg>
-                }
-            >
-                {allSources.map(src => (
-                    <label key={src}>
-                        <input
-                            type="checkbox"
-                            checked={selectedSources.includes(src)}
-                            onChange={(e) => handleSourceToggle(src, e.target.checked)}
-                        />
-                        {src}
-                    </label>
-                ))}
-            </Dropdown>
-
-            <div className="filter-sep"></div>
+            
 
             {/* Date Range */}
             <div className="filter-group">
@@ -169,22 +131,66 @@ const FilterBar = memo(function FilterBar({
 
             <div className="filter-sep"></div>
 
-            {/* Currency */}
-            <div className="filter-group">
-                <span className="filter-label">Tiền tệ</span>
-                <div className="currency-toggle">
-                    <button
-                        type="button"
-                        className={`currency-btn ${currency === 'vnd' ? 'active' : ''}`}
-                        onClick={() => handleCurrency('vnd')}
-                    >VND</button>
-                    <button
-                        type="button"
-                        className={`currency-btn ${currency === 'usd' ? 'active' : ''}`}
-                        onClick={() => handleCurrency('usd')}
-                    >USD</button>
-                </div>
+            {/* Top Selector */}
+                <div className="filter-group">
+                <span className="filter-label">Top</span>
+                <select
+                    className="filter-select"
+                    value={topLimit}
+                    onChange={handleTopLimitChange}
+                    style={{ width: '80px', minWidth: 'auto' }}
+                >
+                    <option value="10">10</option>
+                    <option value="100">100</option>
+                    <option value="1000">1000</option>
+                </select>
             </div>
+
+            <div className="filter-sep"></div>
+
+            {/* Combined Filters (Currency + Source) */}
+            <Dropdown
+                buttonLabel="Lọc"
+                badge={selectedSources.length}
+                align="left"
+                icon={
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
+                    </svg>
+                }
+            >
+                <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+                    <span className="filter-label" style={{ display: 'block', marginBottom: '8px' }}>Tiền tệ</span>
+                    <div className="currency-toggle" style={{ display: 'flex', width: '100%' }}>
+                        <button
+                            type="button"
+                            className={`currency-btn ${currency === 'vnd' ? 'active' : ''}`}
+                            onClick={() => handleCurrency('vnd')}
+                            style={{ flex: 1, padding: '6px 0', fontSize: '12px' }}
+                        >VND</button>
+                        <button
+                            type="button"
+                            className={`currency-btn ${currency === 'usd' ? 'active' : ''}`}
+                            onClick={() => handleCurrency('usd')}
+                            style={{ flex: 1, padding: '6px 0', fontSize: '12px' }}
+                        >USD</button>
+                    </div>
+                </div>
+                
+                <div style={{ padding: '0 16px', marginBottom: '6px' }}>
+                    <span className="filter-label">Nguồn (Source)</span>
+                </div>
+                {allSources.map(src => (
+                    <label key={src}>
+                        <input
+                            type="checkbox"
+                            checked={selectedSources.includes(src)}
+                            onChange={(e) => handleSourceToggle(src, e.target.checked)}
+                        />
+                        {src}
+                    </label>
+                ))}
+            </Dropdown>
 
             <div className="filter-sep"></div>
 
@@ -210,6 +216,7 @@ const FilterBar = memo(function FilterBar({
                     </label>
                 ))}
             </Dropdown>
+            <div className="filter-sep"></div>
             <button type="button" className="btn-clear" onClick={handleClear}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18" /><path d="M8 6V4h8v2" />

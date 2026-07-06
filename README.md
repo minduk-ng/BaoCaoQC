@@ -4,13 +4,16 @@ BaoCaoQC là một hệ thống web nội bộ (Dashboard) được xây dựng 
 
 ## 🚀 Tính năng chính
 
-- **Báo cáo Chiến dịch (Report):** Xem tổng hợp các chỉ số quan trọng (Cost, Clicks, Impressions, Installs, CPI, CTR, CPM...) theo nguồn chạy quảng cáo (Source) và theo từng tựa game (Customer).
+- **Báo cáo Chiến dịch (Report):** Xem tổng hợp các chỉ số quan trọng (Cost, Clicks, Impressions, Installs, CPI, CTR, CPM...) theo nguồn chạy quảng cáo (Source) và theo từng tựa game (Customer). Tích hợp nút Toggle chuyển đổi chế độ **nhóm dữ liệu (Group By)** linh hoạt giữa **Source** và **OS**.
 - **So sánh Hiệu quả (Compare):** So sánh trực quan dữ liệu quảng cáo giữa nhiều tập dữ liệu khác nhau trên biểu đồ Chart.js.
 - **Top Chiến dịch (Top QC):** 
   - Xem bảng xếp hạng top chiến dịch có chi phí chạy cao nhất.
   - Hỗ trợ xem Top 10, Top 100, Top 1000.
   - Sắp xếp và phân trang dễ sử dụng.
-- **Tính năng Lọc mạnh mẽ:** Lọc theo Khoảng thời gian, Nguồn (Channel), Khách hàng (Customer), và đơn vị Tiền tệ (VND/USD).
+- **Tính năng Lọc mạnh mẽ:** 
+  - Lọc theo Khoảng thời gian, Nguồn (Channel), Khách hàng (Customer), và đơn vị Tiền tệ (VND/USD).
+  - Modal lọc nâng cao hỗ trợ lọc chi tiết theo Source, Region, OS, Format, Type.
+  - **Lọc thông minh:** Các danh sách lựa chọn (Customer, Source, Region, OS...) tự động chỉ hiển thị các giá trị có phát sinh dữ liệu thực tế trong khoảng thời gian được chọn.
 - **Xuất Excel:** Dễ dàng tải xuống dữ liệu báo cáo ra file Excel siêu tốc ngay trên trình duyệt (sử dụng thư viện SheetJS).
 - **Giao diện Modern & Dark Mode:** Hỗ trợ Dark/Light mode, giao diện bảng căn chỉnh tự động, trải nghiệm người dùng tối ưu.
 
