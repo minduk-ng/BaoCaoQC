@@ -15,6 +15,7 @@ BaoCaoQC là một hệ thống web nội bộ (Dashboard) được xây dựng 
   - Modal lọc nâng cao hỗ trợ lọc chi tiết theo Source, Region, OS, Format, Type.
   - **Lọc thông minh:** Các danh sách lựa chọn (Customer, Source, Region, OS...) tự động chỉ hiển thị các giá trị có phát sinh dữ liệu thực tế trong khoảng thời gian được chọn.
 - **Xuất Excel:** Dễ dàng tải xuống dữ liệu báo cáo ra file Excel siêu tốc ngay trên trình duyệt (sử dụng thư viện SheetJS).
+- **Đăng nhập Google (OAuth 2.0):** Xác thực người dùng qua Google OAuth, phân quyền theo role (Admin/Viewer/Guest) với danh sách email cấu hình trong file PHP. Session-based authentication kết hợp Inertia.js shared data.
 - **Giao diện Modern & Dark Mode:** Hỗ trợ Dark/Light mode, giao diện bảng căn chỉnh tự động, trải nghiệm người dùng tối ưu.
 
 ---
@@ -90,6 +91,33 @@ npm install
 cp .env.example .env
 php artisan key:generate
 ```
+
+### 2.5 Cấu hình Google OAuth
+
+1. Tạo OAuth 2.0 Client ID tại [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Cấu hình Authorized redirect URIs: `http://localhost:8000/auth/google/callback`
+3. Thêm thông tin vào file `.env`:
+
+```env
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+```
+
+4. Cấu hình phân quyền trong `config/auth_roles.php`:
+
+```php
+'roles' => [
+    'admin' => ['admin@gmail.com'],
+    'viewer' => ['viewer@gmail.com'],
+],
+```
+
+| Role | Quyền |
+|---|---|
+| Admin | Đầy đủ: Report, Top QC, Compare, xem customer, xuất Excel |
+| Viewer | Report (không xem chi tiết customer), xuất Excel |
+| Guest | Không có quyền, hiển thị trang thông báo liên hệ Admin |
 
 ### 3. Chạy Server phát triển
 
