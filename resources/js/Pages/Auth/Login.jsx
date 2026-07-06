@@ -13,9 +13,6 @@ export default function Login({ error }) {
                 </div>
 
                 <h1 className="login-title">Đăng nhập để tiếp tục</h1>
-                <p className="login-subtitle">
-                    Sử dụng tài khoản Google để truy cập hệ thống báo cáo
-                </p>
 
                 {error && (
                     <div className="login-error">

@@ -78,6 +78,14 @@ body {
     transition: background 0.3s, color 0.3s;
 }
 
+#app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
 /* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar {
     width: 6px;
@@ -1822,6 +1830,7 @@ body {
     width: 100%;
     background: var(--bg-primary);
     padding: 20px;
+
 }
 
 .login-card {
@@ -1834,6 +1843,7 @@ body {
     text-align: center;
     box-shadow: var(--shadow-lg);
     animation: modalIn 0.4s ease;
+    
 }
 
 .login-logo {
