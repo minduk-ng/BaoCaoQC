@@ -148,9 +148,9 @@ const FilterBar = memo(function FilterBar({
 
             <div className="filter-sep"></div>
 
-            {/* Source */}
+            {/* Combined Filters (Currency + Source) */}
             <Dropdown
-                buttonLabel="Lọc Source"
+                buttonLabel="Lọc"
                 badge={selectedSources.length}
                 align="left"
                 icon={
@@ -159,6 +159,27 @@ const FilterBar = memo(function FilterBar({
                     </svg>
                 }
             >
+                <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+                    <span className="filter-label" style={{ display: 'block', marginBottom: '8px' }}>Tiền tệ</span>
+                    <div className="currency-toggle" style={{ display: 'flex', width: '100%' }}>
+                        <button
+                            type="button"
+                            className={`currency-btn ${currency === 'vnd' ? 'active' : ''}`}
+                            onClick={() => handleCurrency('vnd')}
+                            style={{ flex: 1, padding: '6px 0', fontSize: '12px' }}
+                        >VND</button>
+                        <button
+                            type="button"
+                            className={`currency-btn ${currency === 'usd' ? 'active' : ''}`}
+                            onClick={() => handleCurrency('usd')}
+                            style={{ flex: 1, padding: '6px 0', fontSize: '12px' }}
+                        >USD</button>
+                    </div>
+                </div>
+                
+                <div style={{ padding: '0 16px', marginBottom: '6px' }}>
+                    <span className="filter-label">Nguồn (Source)</span>
+                </div>
                 {allSources.map(src => (
                     <label key={src}>
                         <input
@@ -170,25 +191,6 @@ const FilterBar = memo(function FilterBar({
                     </label>
                 ))}
             </Dropdown>
-
-            <div className="filter-sep"></div>
-
-            {/* Currency */}
-            <div className="filter-group">
-                <span className="filter-label">Tiền tệ</span>
-                <div className="currency-toggle">
-                    <button
-                        type="button"
-                        className={`currency-btn ${currency === 'vnd' ? 'active' : ''}`}
-                        onClick={() => handleCurrency('vnd')}
-                    >VND</button>
-                    <button
-                        type="button"
-                        className={`currency-btn ${currency === 'usd' ? 'active' : ''}`}
-                        onClick={() => handleCurrency('usd')}
-                    >USD</button>
-                </div>
-            </div>
 
             <div className="filter-sep"></div>
 
@@ -214,6 +216,7 @@ const FilterBar = memo(function FilterBar({
                     </label>
                 ))}
             </Dropdown>
+            <div className="filter-sep"></div>
             <button type="button" className="btn-clear" onClick={handleClear}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18" /><path d="M8 6V4h8v2" />

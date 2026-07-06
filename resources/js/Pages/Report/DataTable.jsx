@@ -143,7 +143,7 @@ const DataTable = memo(function DataTable({ reportData, currency, visibleColumns
                         
                         if (col.key === 'source' || col.key === 'os') {
                             return (
-                                <td key={col.key} className={`col-${col.key} col-${col.type}`} style={{ paddingLeft: isLevel1 ? '' : `${(level) * 20}px` }}>
+                                <td key={col.key} className={`col-${col.key} col-${col.type}`} style={{ paddingLeft: isLevel1 ? '' : `${(level) * 20}px` }} >
                                     {hasChildren ? (
                                         <>
                                             <span className="expand-icon">▶</span>

@@ -45,15 +45,15 @@ const FilterBar = memo(function FilterBar({
     }, [onFilterChange]);
 
     const handleClear = useCallback(() => {
-        onFilterChange({ 
-            customer_name: '', 
-            sources: [], 
+        onFilterChange({
+            customer_name: '',
+            sources: [],
             regions: [],
             os_filter: [],
             formats: [],
             types: [],
-            date_from: '', 
-            date_to: '', 
+            date_from: '',
+            date_to: '',
             currency: 'vnd',
             group_mode: 'source'
         }, true);
@@ -101,7 +101,7 @@ const FilterBar = memo(function FilterBar({
         // For export, we just export the flat data we used to build the tree
         // In the interest of time and simplicity, we can flatten the tree back or use reportData directly if it's flat
         // Since we are building the tree in frontend, reportData passed here is flat
-        
+
         exportToExcel(reportData, exportCols, filename);
     }, [reportData, groupMode, selectedCustomer, selectedSources, dateFrom, dateTo, currency]);
 
@@ -122,9 +122,9 @@ const FilterBar = memo(function FilterBar({
     return (
         <div className="filter-bar">
             {/* Filter Modal */}
-            <FilterModal 
-                isOpen={isFilterModalOpen} 
-                onClose={() => setIsFilterModalOpen(false)} 
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
                 onApply={handleApplyFilters}
                 groupMode={groupMode}
                 allSources={allSources}
@@ -137,6 +137,7 @@ const FilterBar = memo(function FilterBar({
                 selectedFormats={selectedFormats}
                 allTypes={allTypes}
                 selectedTypes={selectedTypes}
+                currency={currency}
             />
 
             <div className='filter-inputs'>
@@ -185,13 +186,13 @@ const FilterBar = memo(function FilterBar({
                         onChange={handleDateChange}
                     />
                 </div>
-<div className="filter-sep"></div>
+                <div className="filter-sep"></div>
                 {/* Filter Button */}
                 <div className="filter-group">
-                    <button 
+                    <button
                         className={`filter-btn-outline ${activeFilterCount > 0 ? 'active' : ''}`}
                         onClick={() => setIsFilterModalOpen(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px' }}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                             <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
@@ -200,31 +201,8 @@ const FilterBar = memo(function FilterBar({
                     </button>
                 </div>
 
-                
-
-                
-
                 <div className="filter-sep"></div>
-
-                {/* Currency */}
-                <div className="filter-group">
-                    <span className="filter-label">Tiền tệ</span>
-                    <div className="currency-toggle">
-                        <button
-                            type="button"
-                            className={`currency-btn ${currency === 'vnd' ? 'active' : ''}`}
-                            onClick={() => handleCurrency('vnd')}
-                        >VND</button>
-                        <button
-                            type="button"
-                            className={`currency-btn ${currency === 'usd' ? 'active' : ''}`}
-                            onClick={() => handleCurrency('usd')}
-                        >USD</button>
-                    </div>
-                </div>
-
-                <div className="filter-sep"></div>
-
+                
                 {/* Column Visibility */}
                 <Dropdown
                     buttonLabel="Hiển thị cột"
@@ -247,6 +225,9 @@ const FilterBar = memo(function FilterBar({
                         </label>
                     ))}
                 </Dropdown>
+
+                <div className="filter-sep"></div>
+
                 <button type="button" className="btn-clear" onClick={handleClear}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M3 6h18" /><path d="M8 6V4h8v2" />

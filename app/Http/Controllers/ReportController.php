@@ -12,8 +12,8 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         // --- Đọc các tham số filter từ query string ---
-        $dateFrom = $request->input('date_from', now()->toDateString());
-        $dateTo = $request->input('date_to', now()->toDateString());
+        $dateFrom = $request->input('date_from', now()->subDay()->toDateString());
+        $dateTo = $request->input('date_to', now()->subDay()->toDateString());
         $currency = $request->input('currency', 'vnd');
         $groupMode = $request->input('group_mode', 'source'); // 'source' or 'os'
         

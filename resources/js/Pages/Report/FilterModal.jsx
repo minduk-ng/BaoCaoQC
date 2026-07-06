@@ -15,6 +15,7 @@ export default function FilterModal({
     selectedFormats,
     allTypes,
     selectedTypes,
+    currency,
 }) {
     // Local state to track selections before applying
     const [localSources, setLocalSources] = useState([...selectedSources]);
@@ -22,6 +23,7 @@ export default function FilterModal({
     const [localOs, setLocalOs] = useState([...selectedOs]);
     const [localFormats, setLocalFormats] = useState([...selectedFormats]);
     const [localTypes, setLocalTypes] = useState([...selectedTypes]);
+    const [localCurrency, setLocalCurrency] = useState(currency || 'vnd');
 
     useEffect(() => {
         if (isOpen) {
@@ -30,8 +32,9 @@ export default function FilterModal({
             setLocalOs([...selectedOs]);
             setLocalFormats([...selectedFormats]);
             setLocalTypes([...selectedTypes]);
+            setLocalCurrency(currency || 'vnd');
         }
-    }, [isOpen, selectedSources, selectedRegions, selectedOs, selectedFormats, selectedTypes]);
+    }, [isOpen, selectedSources, selectedRegions, selectedOs, selectedFormats, selectedTypes, currency]);
 
     if (!isOpen) return null;
 
@@ -50,6 +53,7 @@ export default function FilterModal({
             os_filter: groupMode === 'os' ? localOs : [],
             formats: groupMode === 'os' ? localFormats : [],
             types: groupMode === 'os' ? localTypes : [],
+            currency: localCurrency,
         });
         onClose();
     };
@@ -84,6 +88,25 @@ export default function FilterModal({
                 </div>
                 
                 <div className="filter-modal-body">
+                    {/* Currency Section */}
+                    <div className="filter-section">
+                        <div className="filter-section-title">Tiền tệ</div>
+                        <div className="currency-toggle" style={{ display: 'flex', maxWidth: '200px' }}>
+                            <button
+                                type="button"
+                                className={`currency-btn ${localCurrency === 'vnd' ? 'active' : ''}`}
+                                onClick={() => setLocalCurrency('vnd')}
+                                style={{ flex: 1, padding: '8px 0', fontSize: '12px' }}
+                            >VND</button>
+                            <button
+                                type="button"
+                                className={`currency-btn ${localCurrency === 'usd' ? 'active' : ''}`}
+                                onClick={() => setLocalCurrency('usd')}
+                                style={{ flex: 1, padding: '8px 0', fontSize: '12px' }}
+                            >USD</button>
+                        </div>
+                    </div>
+
                     {renderSection('Source', allSources, localSources, setLocalSources)}
                     {renderSection('Region', allRegions, localRegions, setLocalRegions)}
                     

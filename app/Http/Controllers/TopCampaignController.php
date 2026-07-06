@@ -12,8 +12,8 @@ class TopCampaignController extends Controller
     public function index(Request $request)
     {
         // --- Read filter parameters from query string ---
-        $dateFrom = $request->input('date_from', now()->subDays(6)->toDateString());
-        $dateTo = $request->input('date_to', now()->toDateString());
+        $dateFrom = $request->input('date_from', now()->subDay()->toDateString());
+        $dateTo = $request->input('date_to', now()->subDay()->toDateString());
         $currency = $request->input('currency', 'vnd');
         $selectedCustomer = $request->input('customer_name', '');
         $selectedSources = $request->input('sources', []);
