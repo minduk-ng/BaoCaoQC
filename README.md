@@ -104,20 +104,26 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 ```
 
-4. Cấu hình phân quyền trong `config/auth_roles.php`:
+4. Cấu hình phân quyền và giới hạn dữ liệu trong `config/auth_roles.php`:
+
+Hệ thống sử dụng cấu trúc Key-Value: `Email => [Danh_sách_khách_hàng_được_phép_xem]`. Sử dụng ký tự `*` cho toàn quyền.
 
 ```php
 'roles' => [
-    'admin' => ['admin@gmail.com'],
-    'viewer' => ['viewer@gmail.com'],
+    'admin' => [
+        'admin@gmail.com' => ['*'],
+    ],
+    'viewer' => [
+        'viewer@gmail.com' => ['sg432'], // Chỉ xem được data của sg432
+    ],
 ],
 ```
 
 | Role | Quyền |
 |---|---|
-| Admin | Đầy đủ: Report, Top QC, Compare, xem customer, xuất Excel |
-| Viewer | Report (không xem chi tiết customer), xuất Excel |
-| Guest | Không có quyền, hiển thị trang thông báo liên hệ Admin |
+| Admin | Đầy đủ: Report, Top QC, Compare, xuất Excel. Xem toàn bộ dữ liệu khách hàng. |
+| Viewer | Truy cập Report và Top QC. Dữ liệu tự động bị giới hạn chặt chẽ theo danh sách Customer được gán. Xuất Excel. |
+| Guest | Không có quyền, hiển thị trang thông báo Không có quyền truy cập. |
 
 ### 3. Chạy Server phát triển
 
