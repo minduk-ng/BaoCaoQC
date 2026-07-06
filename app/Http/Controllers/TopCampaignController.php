@@ -21,14 +21,21 @@ class TopCampaignController extends Controller
         $sortCol = $request->input('sort_col', 'cost');
         $sortDir = $request->input('sort_dir', 'desc');
 
-        // Get unique sources and customers within the date range
-        $allSources = ads::select('source')
-            ->distinct()
-            ->whereBetween('date', [$dateFrom, $dateTo])
-            ->orderBy('source')
-            ->pluck('source');
+        $authUser = $request->session()->get('auth_user');
+        $allowedCustomers = $authUser['allowed_customers'] ?? [];
+        $isRestricted = !in_array('*', $allowedCustomers);
 
-        $customerNames = ads::select('customer_name')
+        // Get unique sources and customers within the date range
+        $sourcesQuery = ads::select('source')
+            ->distinct()
+            ->whereBetween('date', [$dateFrom, $dateTo]);
+            
+        if ($isRestricted) {
+            $sourcesQuery->whereIn('customer_name', $allowedCustomers);
+        }
+        $allSources = $sourcesQuery->orderBy('source')->pluck('source');
+
+        $customersQuery = ads::select('customer_name')
             ->distinct()
             ->whereBetween('date', [$dateFrom, $dateTo])
             ->whereNotNull('customer_name')
@@ -38,9 +45,12 @@ class TopCampaignController extends Controller
                   ->orWhere('installs', '>', 0)
                   ->orWhere('cost_usd', '>', 0)
                   ->orWhere('cost_vnd', '>', 0);
-            })
-            ->orderBy('customer_name')
-            ->pluck('customer_name');
+            });
+            
+        if ($isRestricted) {
+            $customersQuery->whereIn('customer_name', $allowedCustomers);
+        }
+        $customerNames = $customersQuery->orderBy('customer_name')->pluck('customer_name');
         
         if ($selectedCustomer !== '' && !$customerNames->contains($selectedCustomer)) {
             $selectedCustomer = '';
@@ -52,6 +62,10 @@ class TopCampaignController extends Controller
 
         // --- Build query ---
         $query = ads::whereBetween('date', [$dateFrom, $dateTo]);
+
+        if ($isRestricted) {
+            $query->whereIn('customer_name', $allowedCustomers);
+        }
 
         if ($selectedCustomer !== '') {
             $query->where('customer_name', $selectedCustomer);

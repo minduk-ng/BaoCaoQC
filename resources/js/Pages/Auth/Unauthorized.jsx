@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, Head } from '@inertiajs/react';
 import useTheme from '../../Hooks/useTheme';
 
 export default function Unauthorized() {
@@ -14,6 +14,7 @@ export default function Unauthorized() {
 
     return (
         <div className="unauthorized-page">
+            <Head title="Không có quyền - BaoCaoQC" />
             <div className="unauthorized-card">
                 <div className="unauthorized-icon">🔒</div>
                 <h1 className="unauthorized-title">Không có quyền truy cập</h1>

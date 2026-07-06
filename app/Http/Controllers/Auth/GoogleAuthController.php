@@ -30,13 +30,16 @@ class GoogleAuthController extends Controller
         }
 
         $email = $googleUser->getEmail();
-        $role = $this->resolveRole($email);
+        $accessData = $this->resolveRoleAndCustomers($email);
+        $role = $accessData['role'];
+        $allowedCustomers = $accessData['allowed_customers'];
 
         Session::put('auth_user', [
             'name' => $googleUser->getName(),
             'email' => $email,
             'avatar' => $googleUser->getAvatar(),
             'role' => $role,
+            'allowed_customers' => $allowedCustomers,
         ]);
 
         if ($role === 'guest') {
@@ -59,19 +62,25 @@ class GoogleAuthController extends Controller
     }
 
     /**
-     * Look up the user's email in config/auth_roles.php to determine their role.
-     * Returns 'guest' if the email is not found in any role list.
+     * Look up the user's email in config/auth_roles.php to determine their role
+     * and allowed customers.
      */
-    private function resolveRole(string $email): string
+    private function resolveRoleAndCustomers(string $email): array
     {
         $roles = config('auth_roles.roles', []);
 
-        foreach ($roles as $roleName => $emails) {
-            if (in_array($email, $emails, true)) {
-                return $roleName;
+        foreach ($roles as $roleName => $users) {
+            if (array_key_exists($email, $users)) {
+                return [
+                    'role' => $roleName,
+                    'allowed_customers' => $users[$email],
+                ];
             }
         }
 
-        return 'guest';
+        return [
+            'role' => 'guest',
+            'allowed_customers' => [],
+        ];
     }
 }

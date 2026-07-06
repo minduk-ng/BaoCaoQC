@@ -17,12 +17,10 @@ return [
 
     'roles' => [
         'admin' => [
-            'minhducqwe0123@gmail.com'
-            // 'your-admin@gmail.com',
+            'minhducqwe0123@gmail.com' => ['*'],
         ],
         'viewer' => [
-            'ngminhduc05.ds@gmail.com'
-            // 'your-viewer@gmail.com',
+            'ngminhduc05.ds@gmail.com' => ['sg432'],
         ],
     ],
 ];

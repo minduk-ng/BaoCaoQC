@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import useTheme from '../../Hooks/useTheme';
 
 export default function Login({ error }) {
@@ -6,6 +7,7 @@ export default function Login({ error }) {
 
     return (
         <div className="login-page">
+            <Head title="Đăng nhập - BaoCaoQC" />
             <div className="login-card">
                 <div className="login-logo">
                     <div className="login-logo-icon">📊</div>
