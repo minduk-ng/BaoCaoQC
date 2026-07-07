@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
@@ -19,7 +22,7 @@ class GoogleAuthController extends Controller
 
     /**
      * Handle callback from Google OAuth.
-     * Determine role from config and store user info in session.
+     * Upsert user in SQLite, resolve role from DB, store in session.
      */
     public function handleCallback()
     {
@@ -30,19 +33,32 @@ class GoogleAuthController extends Controller
         }
 
         $email = $googleUser->getEmail();
-        $accessData = $this->resolveRoleAndCustomers($email);
-        $role = $accessData['role'];
-        $allowedCustomers = $accessData['allowed_customers'];
+
+        // Upsert user in SQLite
+        $user = User::updateOrCreate(
+            ['email' => $email],
+            [
+                'name' => $googleUser->getName(),
+                'avatar' => $googleUser->getAvatar(),
+                'google_id' => $googleUser->getId(),
+                'last_login_at' => now(),
+            ]
+        );
+
+        // Resolve role from DB
+        $accessData = $this->resolvePermissions($user);
 
         Session::put('auth_user', [
-            'name' => $googleUser->getName(),
+            'user_id' => $user->id,
+            'name' => $user->name,
             'email' => $email,
-            'avatar' => $googleUser->getAvatar(),
-            'role' => $role,
-            'allowed_customers' => $allowedCustomers,
+            'avatar' => $user->avatar,
+            'role' => $accessData['role_name'],
+            'allowed_customers' => $accessData['allowed_customers'],
+            'allowed_pages' => $accessData['allowed_pages'],
         ]);
 
-        if ($role === 'guest') {
+        if (empty($accessData['allowed_pages'])) {
             return redirect('/unauthorized');
         }
 
@@ -62,25 +78,39 @@ class GoogleAuthController extends Controller
     }
 
     /**
-     * Look up the user's email in config/auth_roles.php to determine their role
-     * and allowed customers.
+     * Resolve user's role, allowed_customers, and allowed_pages from DB.
+     * If user has no role assigned, assign 'guest' by default.
      */
-    private function resolveRoleAndCustomers(string $email): array
+    private function resolvePermissions(User $user): array
     {
-        $roles = config('auth_roles.roles', []);
+        $userRole = $user->userRole()->with('role.pages')->first();
 
-        foreach ($roles as $roleName => $users) {
-            if (array_key_exists($email, $users)) {
-                return [
-                    'role' => $roleName,
-                    'allowed_customers' => $users[$email],
-                ];
+        if (!$userRole) {
+            // Assign guest role by default
+            $guestRole = Role::where('name', 'guest')->first();
+            if ($guestRole) {
+                UserRole::create([
+                    'user_id' => $user->id,
+                    'role_id' => $guestRole->id,
+                ]);
+                $userRole = $user->userRole()->with('role.pages')->first();
             }
         }
 
+        if (!$userRole || !$userRole->role) {
+            return [
+                'role_name' => 'guest',
+                'allowed_customers' => [],
+                'allowed_pages' => [],
+            ];
+        }
+
+        $role = $userRole->role;
+
         return [
-            'role' => 'guest',
-            'allowed_customers' => [],
+            'role_name' => $role->name,
+            'allowed_customers' => $role->allowed_customers ?? [],
+            'allowed_pages' => $role->pages->pluck('slug')->toArray(),
         ];
     }
 }
