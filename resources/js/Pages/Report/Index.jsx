@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 import FilterBar from './FilterBar';
 import DataTable from './DataTable';
@@ -85,7 +85,7 @@ export default function ReportIndex({
 
     return (
         <MainLayout>
-            {/* Header */}
+            <Head title="Báo cáo - BaoCaoQC" />
             <div className="page-header" style={{ animation: 'fadeIn 0.4s ease-out' }}>
                 <div className="page-header-icon">📊</div>
                 <div>

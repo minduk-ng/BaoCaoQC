@@ -24,11 +24,19 @@ class ReportController extends Controller
         $selectedFormats = $request->input('formats', []);
         $selectedTypes = $request->input('types', []);
 
-        $hasMetrics = function($q) {
+        $authUser = $request->session()->get('auth_user');
+        $allowedCustomers = $authUser['allowed_customers'] ?? [];
+        $isRestricted = !in_array('*', $allowedCustomers);
+
+        $hasMetrics = function($q) use ($isRestricted, $allowedCustomers) {
             $q->where('clicks', '>', 0)
               ->where('impressions', '>', 0)
               ->where('installs', '>', 0)
               ->where('cost_vnd', '>', 0);
+            
+            if ($isRestricted) {
+                $q->whereIn('customer_name', $allowedCustomers);
+            }
         };
 
         // Fetch distinct values for filters
@@ -76,6 +84,10 @@ class ReportController extends Controller
         $currencySymbol = $currency === 'usd' ? '$' : 'đ';
 
         $query = ads::whereBetween('date', [$dateFrom, $dateTo]);
+
+        if ($isRestricted) {
+            $query->whereIn('customer_name', $allowedCustomers);
+        }
 
         if ($selectedCustomer !== '') {
             $query->where('customer_name', $selectedCustomer);

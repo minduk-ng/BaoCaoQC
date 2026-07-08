@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { Head } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 import ControlPanel from './ControlPanel';
 import DatasetList from './DatasetList';
@@ -133,6 +134,7 @@ export default function CompareIndex({ customerNames, allSources }) {
 
     return (
         <MainLayout>
+            <Head title="So sánh - BaoCaoQC" />
             <div className="compare-container">
                 {/* LEFT PANEL */}
                 <aside className="compare-panel">

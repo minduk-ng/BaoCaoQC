@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 import FilterBar from './FilterBar';
 import TopTable from './TopTable';
@@ -61,6 +61,7 @@ export default function TopIndex({
 
     return (
         <MainLayout>
+            <Head title="Top QC - BaoCaoQC" />
             {/* Header */}
             <div className="page-header" style={{ animation: 'fadeIn 0.4s ease-out' }}>
                 <div className="page-header-icon">🏆</div>
